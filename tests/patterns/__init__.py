@@ -1,0 +1,3 @@
+"""
+Test patterns package initialization.
+"""
