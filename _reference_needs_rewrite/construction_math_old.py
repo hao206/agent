@@ -1,5 +1,5 @@
 """
-Legacy Construction Math Engine (Chứa lỗi logic toán học — Đã đánh dấu cần Refactor).
+Engine Tính toán Chi phí & Bóc tách Khối lượng — Phiên bản thử nghiệm ban đầu (Baseline Engine).
 """
 from typing import Literal
 from pydantic import BaseModel, Field

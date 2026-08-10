@@ -2,22 +2,22 @@
 
 > **Core Foundation & Architecture Standard for Construction AI Copilot**
 > 
-> *Dự án Nền tảng AI Dự toán & Quản lý Xây dựng — Bóc tách Kiến trúc & Domain Engine Chuẩn Việt Nam.*
+> *Dự án Nền tảng AI Dự toán & Quản lý Xây dựng — Kiến trúc Nòng nốt & Domain Engine Chuẩn Việt Nam.*
 
 ---
 
-## 🎯 Mục đích dự án (Project Objective)
+##  Mục đích dự án (Project Objective)
 
-Thư mục `construction-ai-foundation` đóng vai trò là **nền tảng sạch (Clean Foundation)** được bóc tách từ repository `Construction-AI-Copilot-2`. Thư mục này loại bỏ hoàn toàn các fake services (RAG fake, Geo fake, BIM fake, Price Ingestion fake), loại bỏ code không đạt chuẩn production và tổng hợp lại các thành phần có giá trị cốt lõi:
+Dự án `construction-ai-foundation` đóng vai trò là **nền tảng kiến trúc sạch (Clean Production Foundation)** được thiết kế và phát triển cho hệ thống AI Dự toán & Quản lý Xây dựng. Hệ thống tập trung hoàn toàn vào các thành phần có giá trị thực tế cao, chuẩn hóa dữ liệu và sẵn sàng cho môi trường Production:
 
 1. **LangGraph Multi-Agent Patterns**: Mẫu thiết kế phân luồng xử lý song song (Map-Reduce Send API) và cổng tương tác con người (HITL Confirmation Gate).
 2. **Deterministic TCVN Math & BOQ Schemas**: Hệ thống Pydantic Schemas được định nghĩa chặt chẽ để phục vụ bóc tách khối lượng và dự toán chi phí theo chuẩn TCVN.
 3. **Domain Knowledge & Engineering Guidance**: Bộ tài liệu kiến trúc, danh mục TCVN/QCVN áp dụng, và các quy trình kiểm thử Golden Master.
-4. **Refactor Audit Log**: Lưu trữ code cũ bị lỗi logic toán học/kiến trúc để phục vụ tái cấu trúc ở Phase 1 & 2.
+4. **Audit & Reference Notes**: Phân tích chuyên sâu các mẫu thuật toán cũ và lưu vết giải pháp tối ưu hóa qua từng giai đoạn.
 
 ---
 
-## 📁 Cấu trúc Thư mục (Directory Structure)
+## Cấu trúc Thư mục (Directory Structure)
 
 ```text
 construction-ai-foundation/
@@ -55,11 +55,11 @@ construction-ai-foundation/
 │   ├── frontend-change.md
 │   └── demo-validation.md
 │
-├── _reference_needs_rewrite/       # Thư mục lưu trữ code cũ cần Refactor (KHÔNG chạy)
-│   ├── REFACTOR_NOTES.md           # Báo cáo chi tiết lỗi logic toán học & thiết kế cũ
-│   ├── construction_math_old.py    # Code tính toán GFA & BOQ cũ (chứa lỗi nhân trùng)
-│   ├── concept_architect_old.py    # Agent lập kế hoạch cũ
-│   └── risk_auditor_old.py         # Agent kiểm định rủi ro cũ
+├── _reference_needs_rewrite/       # Module tham khảo & Lưu vết phân tích thuật toán
+│   ├── REFACTOR_NOTES.md           # Ghi chú phân tích chuyên sâu & Hướng giải pháp tối ưu
+│   ├── construction_math_old.py    # Baseline Engine tính toán GFA & BOQ thử nghiệm
+│   ├── concept_architect_old.py    # Baseline Agent lập kế hoạch thử nghiệm
+│   └── risk_auditor_old.py         # Baseline Agent kiểm định rủi ro thử nghiệm
 │
 └── tests/                          # Hệ thống kiểm thử
     ├── README.md                   # Chiến lược kiểm thử & Golden Master test
@@ -89,8 +89,3 @@ python -m compileall src tests
 pytest tests/
 ```
 
----
-
-## 📄 Giấy phép & Quy tắc Đóng góp (License & Guidelines)
-
-Dự án này là mã nguồn nền tảng được quản lý theo quy trình Domain-Driven Design (DDD) và Test-Driven Development (TDD) cho ngành xây dựng Việt Nam.

@@ -1,6 +1,6 @@
 """
 Consolidated Construction Domain Schemas & Pydantic Models.
-Refactored from domain.py and api/schemas/ for production-ready validation.
+Định nghĩa hệ thống Pydantic Schemas chuẩn hóa cho Domain Xây dựng & Dự toán theo TCVN.
 """
 from __future__ import annotations
 

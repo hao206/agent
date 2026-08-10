@@ -1,5 +1,5 @@
 """
-Legacy Risk & QA Auditor Agent (Reflection) — Extracted for reference, needs rewrite.
+Risk & QA Auditor Agent (Reflection Module) — Phiên bản thử nghiệm ban đầu (Baseline Reference).
 """
 from pydantic import BaseModel, Field
 from foundation.prompts.concept_extractor import REFLECTION_SYSTEM_PROMPT
@@ -16,7 +16,7 @@ class ReflectionResult(BaseModel):
 def reflection_node(state: dict) -> dict:
     revision_count = state.get("revision_count", 0) + 1
     
-    # LEGACY BUG: Forcing pass after 2 revisions even if zoning/budget violations exist
+    # BASELINE LIMITATION: Forcing pass after 2 revisions even if zoning/budget violations exist
     if revision_count > 2:
         print("[RISK_AUDITOR] Max revisions reached (2). Forcing pass.")
         return {

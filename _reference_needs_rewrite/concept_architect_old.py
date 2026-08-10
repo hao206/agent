@@ -1,5 +1,5 @@
 """
-Legacy ConceptArchitect Agent (Planner) — Extracted for reference, needs rewrite.
+ConceptArchitect Agent (Planner Module) — Phiên bản thử nghiệm ban đầu (Baseline Reference).
 """
 from datetime import datetime
 from langchain_core.messages import AIMessage

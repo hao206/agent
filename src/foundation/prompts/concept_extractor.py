@@ -1,6 +1,6 @@
 """
 Centralized System Prompts & Templates for Construction AI Copilot.
-Extracted and refactored from config/prompts.py.
+Bộ prompts chuẩn hóa cho Phân loại ý định, Trích xuất thông số công trình và Kiểm định rủi ro.
 """
 
 # ── Intent Classification ────────────────────────────

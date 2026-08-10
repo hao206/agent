@@ -1,54 +1,55 @@
-# Audit & Refactor Notes (Lưu ý Tái cấu trúc)
+# Technical Audit & Optimization Strategy (Báo cáo Phân tích & Hướng Tối ưu)
 
-> **CẢNH BÁO**: Các file trong thư mục `_reference_needs_rewrite/` CHỈ DÙNG ĐỂ THAM KHẢO VÀ PHÂN TÍCH LỖI LOGIC. KHÔNG NÊN CHẠY HOẶC SỬ DỤNG TRỰC TIẾP TRONG PRODUCTION.
+> **LƯU Ý THIẾT KẾ**: Các module trong thư mục `_reference_needs_rewrite/` đóng vai trò là mẫu tham khảo cho phiên bản thuật toán ban đầu (Baseline Experiments). Thư mục này phục vụ mục đích phân tích kỹ thuật và theo dõi quá trình tối ưu hóa logic qua các giai đoạn.
 
 ---
 
-## 1. `construction_math_old.py` (Lỗi logic toán học & tính trùng chi phí)
+## 1. `construction_math_old.py` (Phân tích thuật toán toán học & công thức tính chi phí)
 
-### Lỗi 1: Tính trùng chi phí Hoàn thiện (Finishing) & Nhân công (Labor) cho Móng & Mái
-- **Hiện trạng trong code cũ**:
+### Vấn đề 1: Công thức tính chi phí Hoàn thiện (Finishing) & Nhân công (Labor) cho Móng & Mái
+- **Phân tích phiên bản ban đầu**:
   - `total_gfa = foundation_area + floors_area + roof_area`
   - `finishing_cost = gfa * prices["finishing"]`
   - `labor_cost = gfa * prices["labor"]`
-- **Nguyên nhân lỗi**:
-  Hệ số móng (ví dụ: móng băng $K_{\text{foundation}} = 0.50$) và mái (ví dụ: mái tôn $K_{\text{roof}} = 0.30$) được tính cộng vào `GFA`. Khi nhân đơn giá hoàn thiện (sơn, gạch ốp, thiết bị) và nhân công hoàn thiện với toàn bộ `GFA`, hệ thống đã **tính chi phí hoàn thiện nội thất cho cả phần móng dưới đất và diện tích mái tôn**!
-- **Phương án Refactor**:
-  Chi phí hoàn thiện (`finishing_cost`) và nhân công (`labor_cost`) chỉ được tính trên **diện tích sàn sử dụng thực tế** ($\text{Land Area} \times N_{\text{floors}}$), không nhân trên hệ số quy đổi móng/mái của GFA.
+- **Nguyên nhân hạn chế**:
+  Hệ số móng (ví dụ: móng băng $K_{\text{foundation}} = 0.50$) và mái (ví dụ: mái tôn $K_{\text{roof}} = 0.30$) được tính cộng vào diện tích quy đổi `GFA`. Khi nhân đơn giá hoàn thiện (sơn, gạch ốp, thiết bị) và nhân công hoàn thiện với toàn bộ `GFA`, thuật toán ban đầu bị **tính trùng chi phí hoàn thiện nội thất cho cả phần móng dưới đất và mái tôn**.
+- **Giải pháp tối ưu hóa**:
+  Chi phí hoàn thiện (`finishing_cost`) và nhân công (`labor_cost`) chỉ tính trên **diện tích sàn sử dụng thực tế** ($\text{Land Area} \times N_{\text{floors}}$), không nhân trên hệ số quy đổi móng/mái của GFA.
 
-### Lỗi 2: Tính 5% Dự phòng rủi ro (Contingency) trùm lên Phí Giấy phép Xây dựng
-- **Hiện trạng trong code cũ**:
+### Vấn đề 2: Tỷ lệ Dự phòng rủi ro (Contingency) tính trên Phí Giấy phép Xây dựng
+- **Phân tích phiên bản ban đầu**:
   `subtotal = foundation_cost + structure_rough_cost + finishing_cost + labor_cost + permits_cost_vnd`
   `contingency_cost = subtotal * 0.05`
-- **Nguyên nhân lỗi**:
-  Chi phí pháp lý / giấy phép hành chính ($15,000,000$ VND) là chi phí cố định (fixed baseline administrative fee), không có biến động vật tư hay biến thiên theo rủi ro thi công.
-- **Phương án Refactor**:
-  `contingency_cost` chỉ bằng $5\%$ tổng chi phí thi công xây dựng (`foundation + rough + finishing + labor`), không cộng phí pháp lý vào subtotal tính % dự phòng.
+- **Nguyên nhân hạn chế**:
+  Chi phí pháp lý / giấy phép hành chính ($15,000,000$ VND) là chi phí cố định (fixed baseline administrative fee), không biến động theo vật tư hay rủi ro thi công.
+- **Giải pháp tối ưu hóa**:
+  `contingency_cost` được tính bằng $5\%$ tổng chi phí thi công trực tiếp (`foundation + rough + finishing + labor`), loại trừ chi phí pháp lý cố định khỏi subtotal tính % dự phòng.
 
 ---
 
-## 2. `concept_architect_old.py` (Lỗi thiết kế Agent & Xử lý fallback)
+## 2. `concept_architect_old.py` (Phân tích thiết kế Agent & Ràng buộc Validation)
 
-### Lỗi 1: Trích xuất thiếu fallback validation
-- **Hiện trạng**: Sử dụng `get_llm().with_structured_output(ProjectBrief)` mà không có guardrails kiểm định giới hạn vật lý (như số tầng < 1 hoặc diện tích < 1m²).
-- **Phương án Refactor**:
-  Đưa Pydantic `field_validator` / `model_validator` vào `ProjectBrief` để tự động normalize dữ liệu hoặc raise error trước khi chốt plan.
+### Vấn đề 1: Validation dữ liệu đầu vào & Guardrails
+- **Phân tích phiên bản ban đầu**: Sử dụng `get_llm().with_structured_output(ProjectBrief)` mà không tích hợp guardrails kiểm định giới hạn vật lý (như số tầng < 1 hoặc diện tích < 1m²).
+- **Giải pháp tối ưu hóa**:
+  Tích hợp Pydantic `field_validator` và `model_validator` trực tiếp vào `ProjectBrief` để tự động chuẩn hóa dữ liệu và phát hiện bất hợp lý trước khi khởi tạo tiến trình.
 
-### Lỗi 2: Hardcode các steps chạy song song
-- **Hiện trạng**: Các steps luôn bị gán cứng `["material_agent", "labor_agent", "curing_agent", "zoning_agent"]` mà không điều chỉnh theo loại hình công trình (ví dụ: cải tạo nội thất không cần `curing_agent` đổ bê tông móng).
-- **Phương án Refactor**: Dynamic step generation dựa trên `construction_type` và `functional_requirements`.
+### Vấn đề 2: Động hóa luồng thực thi song song (Dynamic Execution Dispatch)
+- **Phân tích phiên bản ban đầu**: Luồng thực thi bị gán cố định `["material_agent", "labor_agent", "curing_agent", "zoning_agent"]` bất kể loại hình công trình.
+- **Giải pháp tối ưu hóa**:
+  Phát triển cơ chế tự động tạo danh sách bước (`steps`) dựa trên `construction_type` và `functional_requirements` thực tế của dự án.
 
 ---
 
-## 3. `risk_auditor_old.py` (Lỗi logic QA Audit & Giới hạn vòng lặp)
+## 3. `risk_auditor_old.py` (Phân tích kiểm định QA & Giới hạn vòng lặp)
 
-### Lỗi 1: Ép qua QA (Forcing pass) sau 2 lần sửa đổi
-- **Hiện trạng**:
+### Vấn đề 1: Xử lý ngoại lệ vi phạm pháp lý & Quy hoạch
+- **Phân tích phiên bản ban đầu**:
   ```python
   if revision_count > 2:
       return {"needs_revision": False, ...}
   ```
-- **Nguyên nhân lỗi**:
-  Khi rủi ro vi phạm pháp lý QCVN (như xây quá số tầng hoặc quá mật độ) nghiêm trọng, việc tự động "cho qua" sau 2 lần retry sẽ khiến hệ thống trả về báo cáo sai luật cho người dùng.
-- **Phương án Refactor**:
-  Nút thắt vi phạm quy hoạch / pháp lý nghiêm trọng PHẢI gắn cờ `decision_blocked` hoặc chuyển về cổng HITL yêu cầu người dùng cắt giảm tầng/diện tích thay vì tự động ép pass.
+- **Nguyên nhân hạn chế**:
+  Nếu công trình gặp vi phạm quy hoạch nghiêm trọng theo QCVN 01:2021/BXD (như vượt mật độ xây dựng hoặc số tầng tối đa), việc cho qua sau 2 lần thử sẽ tạo ra báo cáo không chính xác.
+- **Giải pháp tối ưu hóa**:
+  Cơ chế kiểm định phân loại rủi ro pháp lý thành lỗi chặn (`decision_blocked`) và tự động kích hoạt cổng HITL để người dùng chủ động điều chỉnh quy mô thay vì tự động ép thông qua.
