@@ -1,8 +1,8 @@
-# Construction AI Foundation (Phase 1 Base)
+# Construction AI Foundation
 
 > **Core Foundation & Architecture Standard for Construction AI Copilot**
 > 
-> *Dự án Nền tảng AI Dự toán & Quản lý Xây dựng — Kiến trúc Nòng nốt & Domain Engine Chuẩn Việt Nam.*
+> *Dự án Nền tảng AI Dự toán & Quản lý Xây dựng — Kiến trúc Nòng cốt & Domain Engine*
 
 ---
 
@@ -37,7 +37,7 @@ construction-ai-foundation/
 │       ├── 0001-package-src-layout.md
 │       └── 0002-product-harness.md
 │
-├── src/foundation/                 # Mã nguồn nòng nốt & Schemas
+├── src/foundation/                 # Mã nguồn nòng cốt & Schemas
 │   ├── __init__.py
 │   ├── schemas/
 │   │   ├── __init__.py
@@ -69,7 +69,7 @@ construction-ai-foundation/
 
 ---
 
-## 🛠️ Yêu cầu & Cài đặt (Requirements & Setup)
+##  Yêu cầu & Cài đặt (Requirements & Setup)
 
 - **Python**: `>= 3.10`
 - **Dependencies chính**: `pydantic>=2.0.0`, `langgraph>=0.2.0`, `langchain-core>=0.3.0`, `pytest>=8.0.0`
