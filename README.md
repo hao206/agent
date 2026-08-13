@@ -1,76 +1,222 @@
-# Construction AI Foundation
+# Construction AI Copilot
 
-> **Core Foundation & Architecture Standard for Construction AI Copilot**
-> 
-> *Dự án Nền tảng AI Dự toán & Quản lý Xây dựng — Kiến trúc Nòng cốt & Domain Engine*
-
----
-
-##  Mục đích dự án (Project Objective)
-
-Dự án `construction-ai-foundation` đóng vai trò là **nền tảng kiến trúc sạch (Clean Production Foundation)** được thiết kế và phát triển cho hệ thống AI Dự toán & Quản lý Xây dựng. Hệ thống tập trung hoàn toàn vào các thành phần có giá trị thực tế cao, chuẩn hóa dữ liệu và sẵn sàng cho môi trường Production:
-
-1. **LangGraph Multi-Agent Patterns**: Mẫu thiết kế phân luồng xử lý song song (Map-Reduce Send API) và cổng tương tác con người (HITL Confirmation Gate).
-2. **Deterministic TCVN Math & BOQ Schemas**: Hệ thống Pydantic Schemas được định nghĩa chặt chẽ để phục vụ bóc tách khối lượng và dự toán chi phí theo chuẩn TCVN.
-3. **Domain Knowledge & Engineering Guidance**: Bộ tài liệu kiến trúc, danh mục TCVN/QCVN áp dụng, và các quy trình kiểm thử Golden Master.
-4. **Audit & Reference Notes**: Phân tích chuyên sâu các mẫu thuật toán cũ và lưu vết giải pháp tối ưu hóa qua từng giai đoạn.
+> **Student Prototype for AI-Assisted Construction Estimation**
+>
+> A student-built research prototype exploring how LLMs, structured data models, deterministic calculations, and workflow orchestration can support preliminary construction estimation.
 
 ---
 
-## Cấu trúc Thư mục (Directory Structure)
+## 📌 Project Status
+
+**Student Prototype / Educational Demo**
+
+This project is a personal computer science student prototype. It is **not** a production-grade construction management platform, certified engineering software, or legal compliance verification system.
+
+---
+
+## 💡 What This Project Does
+
+- **Natural Language Parameter Extraction**: Uses local LLM (Qwen2.5) or cloud models via LangChain to convert Vietnamese user requests into structured Pydantic schemas (`ProjectBrief`).
+- **Deterministic Cost & Volume Takeoff**: Computes Gross Floor Area (GFA), preliminary concrete volume, steel tonnage, brick counts, and cost breakdowns using standard testable Python math routines.
+- **Rule-Based Preliminary Risk Screening**: Audits preliminary estimates against budget constraints and basic QCVN zoning heuristics to highlight potential risks early.
+- **Human-in-the-Loop Confirmation**: Pauses workflow execution state (`WAITING_HITL` / `DECISION_BLOCKED`) allowing users to review and adjust parameters before calculation.
+
+---
+
+## 🔄 Demo Workflow
 
 ```text
-construction-ai-foundation/
-├── README.md                       # Tài liệu hướng dẫn chính
-├── pyproject.toml                  # Khai báo dependencies tối giản
-├── .gitignore                      # Git ignore rules cho Python/Environment
-├── .env.example                    # Mẫu cấu hình môi trường (LLM API keys)
-│
-├── docs/                           # Tài liệu Kiến trúc & Domain
-│   ├── architecture/
-│   │   ├── system-overview.md      # Tổng quan kiến trúc hệ thống Multi-Agent
-│   │   └── agent-responsibilities.md# Chi tiết trách nhiệm từng Agent
-│   ├── domain/
-│   │   ├── construction-logic.md   # Công thức bóc tách khối lượng & GFA theo TCVN
-│   │   └── tcvn-references.md      # Danh mục Tiêu chuẩn Kỹ thuật Việt Nam áp dụng
-│   └── decisions/                  # Các ADRs (Architecture Decision Records)
-│       ├── 0001-package-src-layout.md
-│       └── 0002-product-harness.md
-│
-├── src/foundation/                 # Mã nguồn nòng cốt & Schemas
-│   ├── __init__.py
-│   ├── schemas/
-│   │   ├── __init__.py
-│   │   └── project_brief.py        # Pydantic models chuẩn cho ProjectBrief, BOQ, Risk
-│   ├── patterns/                   # Hướng dẫn & Mã tham khảo LangGraph Patterns
-│   │   ├── __init__.py
-│   │   ├── langgraph_parallel.md   # Pattern chạy agent song song (Map-Reduce)
-│   │   └── hitl_gate.md            # Pattern HITL interrupt/resume
-│   └── prompts/
-│       ├── __init__.py
-│       └── concept_extractor.py    # System prompts chuẩn cho intent & extraction
-│
-├── checklists/                     # Quy trình kiểm thử & Đảm bảo chất lượng
-│   ├── backend-change.md
-│   ├── frontend-change.md
-│   └── demo-validation.md
-│
-├── _reference_needs_rewrite/       # Module tham khảo & Lưu vết phân tích thuật toán
-│   ├── REFACTOR_NOTES.md           # Ghi chú phân tích chuyên sâu & Hướng giải pháp tối ưu
-│   ├── construction_math_old.py    # Baseline Engine tính toán GFA & BOQ thử nghiệm
-│   ├── concept_architect_old.py    # Baseline Agent lập kế hoạch thử nghiệm
-│   └── risk_auditor_old.py         # Baseline Agent kiểm định rủi ro thử nghiệm
-│
-└── tests/                          # Hệ thống kiểm thử
-    ├── README.md                   # Chiến lược kiểm thử & Golden Master test
-    └── patterns/
-        └── golden_master_example.py# Mã nguồn ví dụ Golden Master Cost Test
+User Input (Natural Language)
+        │
+        ▼
+   [ Planner Node ] ────────► Structured ProjectBrief Schema
+        │
+        ▼
+[ Risk Auditor Node ] ──────► Preliminary Warning / QCVN Check
+        │
+        ▼
+ [ Math Engine Node ] ──────► Deterministic BOQ & Cost Estimate
+        │
+        ▼
+  Result Output & Streamlit UI
 ```
 
 ---
 
-##  Yêu cầu & Cài đặt (Requirements & Setup)
+## 🏗️ Architecture
 
-- **Python**: `>= 3.10`
-- **Dependencies chính**: `pydantic>=2.0.0`, `langgraph>=0.2.0`, `langchain-core>=0.3.0`, `pytest>=8.0.0`
+```mermaid
+graph TD
+    subgraph Client Layer
+        UI[Streamlit Web UI]
+    end
 
+    subgraph API Layer
+        API[FastAPI Router - main.py]
+    end
+
+    subgraph Multi-Agent Graph Layer - src/graph.py
+        Planner[Planner Node - Qwen2.5 / LLM]
+        Auditor[Risk Auditor Node - Rule Screening]
+        Engine[Deterministic Estimation Engine]
+    end
+
+    UI --> API
+    UI <--> Multi-Agent Graph Layer
+    API <--> Multi-Agent Graph Layer
+```
+
+### Active Processing Nodes
+1. **Planner Node (`src/foundation/agents/planner.py`)**: Extracts parameters (`location`, `land_area_m2`, `num_floors`, `quality_tier`, `budget_vnd`) into `ProjectBrief`.
+2. **Risk Auditor Node (`src/foundation/agents/risk_auditor.py`)**: Runs preliminary rule-based screening for QCVN height/density rules and budget limits.
+3. **Math Engine Node (`src/math_engine.py`)**: Runs deterministic Python formulas to produce the preliminary `BillOfQuantitiesSummary`.
+
+---
+
+## 🛠️ Key Technical Ideas
+
+- **Pydantic V2 Schemas**: Strict data validation and `@computed_field` serialization for transparent data handling.
+- **LangGraph Workflow**: StateGraph representation of agent transitions and HITL confirmation states.
+- **Deterministic Math Engine**: Separates non-probabilistic arithmetic from probabilistic LLM reasoning.
+- **TCVN-Informed Heuristics**: References Vietnamese construction practices for illustrative preliminary cost ratios.
+
+---
+
+## 📝 Example
+
+### User Input
+> *"Tôi muốn xây nhà phố 3 tầng 100m² tại Hà Nội, gói trung cấp, ngân sách 2.8 tỷ."*
+
+### Structured Output Summary
+- **GFA (Gross Floor Area)**: `400.0 m²` (Móng 50m² + 3 Sàn 300m² + Mái 50m²)
+- **Bê tông dự kiến**: `140.0 m³` (0.35 m³/m² GFA assumption)
+- **Thép dự kiến**: `40.0 tấn` (100 kg/m² GFA assumption)
+- **Gạch dự kiến**: `32,000 viên` (80 viên/m² GFA assumption)
+- **Tổng Dự Toán Ước Tính**: `2,755,500,000 VNĐ` (Đã bao gồm 5% dự phòng rủi ro thi công)
+
+---
+
+## 🚨 Limitations
+
+> [!IMPORTANT]
+> **Known Project Limitations:**
+> - **Simplified Assumptions**: Ratios (100 kg steel/m², 0.35 m³ concrete/m², 80 bricks/m²) are illustrative demo figures and do **not** constitute structural engineering design values.
+> - **Informational References Only**: TCVN/QCVN references in code/docs serve as educational domain context, not a certified compliance audit.
+> - **No Replacement for Professionals**: Results are preliminary approximations and cannot replace licensed structural engineers, quantity surveyors, or official architectural blueprints.
+> - **Static Cost Factors**: Unit prices and coefficients in the demo are static assumptions for demonstration purposes.
+
+---
+
+## 📁 Project Structure
+
+```text
+construction-ai-foundation/
+├── README.md                           # Main documentation
+├── pyproject.toml                      # Project metadata & dependencies
+├── requirements.txt                    # Dependencies file
+├── .env.example                        # Environment variables template
+├── app.py                              # Streamlit Web UI Frontend
+├── main.py                             # FastAPI Backend API
+│
+├── src/
+│   ├── math_engine.py                  # Deterministic estimation math engine
+│   ├── graph.py                        # LangGraph StateGraph workflow definition
+│   └── foundation/
+│       ├── llm_factory.py              # Qwen2.5 Local / ChatOllama factory
+│       ├── agents/
+│       │   ├── planner.py              # Planner & parameter extraction node
+│       │   └── risk_auditor.py          # Preliminary risk auditor node
+│       ├── schemas/
+│       │   └── project_brief.py        # Pydantic V2 domain models
+│       └── prompts/
+│           └── concept_extractor.py    # Rule-based extraction system prompts
+│
+├── docs/
+│   ├── architecture/                   # Architecture documentation
+│   ├── domain/                         # Estimation logic & standard references
+│   └── legacy/                         # Historical research notes & baseline code
+│
+└── tests/                              # Automated test suite
+    ├── test_schemas.py                 # Pydantic schema tests
+    ├── test_math_engine.py             # Math engine unit tests
+    ├── test_risk_auditor.py            # Risk auditor screening tests
+    └── patterns/
+        └── golden_master_example.py    # Golden Master baseline cost test
+```
+
+---
+
+## ⚙️ Setup & Installation
+
+### Prerequisites
+- Python `>= 3.10`
+- (Optional) [Ollama](https://ollama.com/) running locally for Qwen2.5 model execution.
+
+### Environment Setup
+```powershell
+# Clone repository
+git clone https://github.com/hao206/agent.git
+cd construction-ai-foundation
+
+# Create & activate virtual environment
+python -m venv .venv
+.\.venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Configuration
+Copy `.env.example` to `.env` and set your local model/API parameters:
+```powershell
+cp .env.example .env
+```
+
+---
+
+## 🚀 Running the Prototype
+
+### Run Streamlit UI
+```powershell
+streamlit run app.py
+```
+
+### Run FastAPI Backend
+```powershell
+uvicorn main:app --reload
+```
+
+---
+
+## 🧪 Testing
+
+Run the automated test suite using Python `unittest`:
+```powershell
+python -m unittest discover tests
+```
+
+Run Golden Master test directly:
+```powershell
+python -m unittest tests/patterns/golden_master_example.py
+```
+
+---
+
+## 🔮 Future Improvements
+
+- **Specialist Domain Agents**: Integration of dynamic external market pricing APIs (Material Agent, Labor Agent).
+- **Persistent Workflow State**: Database checkpointer for multi-session LangGraph state restoration.
+- **BIM / IFC File Integration**: Direct takeoff extraction from 3D IFC/Revit building models.
+- **Document Export**: Automated PDF/Excel BOQ export generation.
+
+---
+
+## 👤 Author
+
+**Student / Personal Project** — Computer Science Research Prototype.
+
+---
+
+## ⚠️ Disclaimer
+
+*This prototype is developed strictly for academic and educational demonstration purposes. All cost estimations, material takeoff quantities, and risk screening alerts are preliminary approximations generated from simplified demo rules. They must not be used for actual construction contracting, financial commitments, structural design, or legal regulatory compliance.*

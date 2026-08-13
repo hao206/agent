@@ -1,60 +1,35 @@
-# Agent Responsibilities — Construction AI Copilot
+# Agent & Node Responsibilities — Construction AI Copilot
 
-Detailed breakdown of agent nodes, roles, inputs, and outputs within the LangGraph multi-agent architecture.
-
----
-
-## 1. Classify Intent Node (`classify_intent`)
-- **Role**: Intent Classifier
-- **Responsibility**: Inspects user messages and recent chat history to route incoming requests into standard execution paths.
-- **Route Options**:
-  - `construction`: Project estimation, material pricing, zoning queries, curing schedules.
-  - `follow_up`: Comparative or clarifying questions about existing estimates.
-  - `chitchat`: Casual conversation or greeting.
-  - `out_of_scope`: Non-construction related requests (refusal policy triggered).
+Detailed breakdown of current node responsibilities and planned extensions within the research prototype.
 
 ---
 
-## 2. Concept Architect Agent (`planner`)
-- **Role**: Plan Drafter & Parameter Extractor
-- **Responsibility**: Uses structured output LLM to extract project variables into a typed `ProjectBrief` (location, land area, number of floors, budget, foundation, quality tier).
-- **Behavior**: If critical required fields (`location`, `land_area_m2`, `num_floors`, `budget_vnd`) are missing, generates a clarifying Vietnamese follow-up question instead of proceeding.
+## Current Implemented Nodes
+
+### 1. Planner Node (`planner`)
+- **File**: [planner.py](file:///c:/Users/haoph/Downloads/construction-ai-foundation/src/foundation/agents/planner.py)
+- **Role**: Natural Language Parameter Extractor.
+- **Responsibility**: Converts Vietnamese user messages into structured Pydantic `ProjectBrief` objects (`location`, `land_area_m2`, `num_floors`, `quality_tier`, `foundation_type`, `roof_type`, `budget_vnd`).
+- **Behavior**: Asks clarifying follow-up questions if mandatory parameters (`location`, `land_area_m2`, `num_floors`) are missing.
+
+### 2. Risk & QA Auditor Node (`risk_auditor`)
+- **File**: [risk_auditor.py](file:///c:/Users/haoph/Downloads/construction-ai-foundation/src/foundation/agents/risk_auditor.py)
+- **Role**: Preliminary Risk & Assumption Auditor.
+- **Responsibility**: Evaluates building parameters against basic budget thresholds and preliminary QCVN 01:2021/BXD height/density rules.
+- **Behavior**: If severe issues are detected, marks state as `DECISION_BLOCKED` to require human review.
+
+### 3. Math Engine Node (`math_engine`)
+- **File**: [math_engine.py](file:///c:/Users/haoph/Downloads/construction-ai-foundation/src/math_engine.py)
+- **Role**: Deterministic Estimation Engine.
+- **Responsibility**: Computes Gross Floor Area (GFA), preliminary concrete/steel/brick takeoff quantities, and detailed cost breakdowns using explicit testable Python arithmetic.
 
 ---
 
-## 3. Human-in-the-Loop Confirmation Gate (`human_confirm`)
-- **Role**: Execution Gatekeeper
-- **Responsibility**: Pauses execution state using LangGraph `interrupt_before`. Displays extracted parameter draft to user for explicit confirmation or parameter modification before invoking calculation engines.
+## Planned Extensions (Future Work)
 
----
+The following agent responsibilities represent planned future enhancements:
 
-## 4. Specialist Domain Agents (Parallel Map Phase)
-Dispatched concurrently via LangGraph `Send` API to collect market data and domain constraints:
-- **Material Price Agent (`material_agent`)**: Queries current local market prices for steel, cement, sand, brick, and concrete.
-- **Labor Rate Agent (`labor_agent`)**: Fetches regional construction worker daily rates (rough crews, finishing crews, MEP).
-- **Seasonality & Curing Agent (`curing_agent`)**: Evaluates regional weather forecasts and concrete curing requirements.
-- **Zoning & Legal Agent (`zoning_agent`)**: Queries QCVN 01:2021/BXD rules (building density, max height, front/rear setbacks).
-
----
-
-## 5. Cost Reducer Node (`cost_reducer`)
-- **Role**: State Aggregator & Mathematical Calculator
-- **Responsibility**: Collects parallel outputs from specialist agents, applies user price overrides, and invokes the deterministic math engine (`calculate_construction_cost_breakdown`) to produce `BillOfQuantitiesSummary`.
-
----
-
-## 6. Risk Auditor Agent (`reflect`)
-- **Role**: Reflection & Quality Assurance Auditor
-- **Responsibility**: Audits total project costs against client budget, checks building density against legal limits, and detects curing risks. Triggers a revision cycle if critical issues are detected (capped at 2 max revisions).
-
----
-
-## 7. Decision Engine (`decision`)
-- **Role**: Option Evaluator & Ranker
-- **Responsibility**: Ranks construction options (`budget`, `balanced`, `premium`), calculates feasibility scores, and formats decision evidence.
-
----
-
-## 8. Response Agent (`respond`)
-- **Role**: Report Generator
-- **Responsibility**: Synthesizes the final client report in professional Vietnamese Markdown based **strictly** on the verified `DecisionOutput` and `ProjectBrief`.
+- **Material Price Agent (`material_agent`)**: Fetching real-time market material price quotes from external supplier APIs.
+- **Labor Rate Agent (`labor_agent`)**: Fetching regional labor wage data for trade workers.
+- **Seasonality & Curing Agent (`curing_agent`)**: Analyzing local weather forecasts to predict concrete curing delays.
+- **Supervisor Node (`supervisor`)**: Managing dynamic parallel dispatch of specialist agents.

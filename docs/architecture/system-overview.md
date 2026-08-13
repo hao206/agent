@@ -1,52 +1,64 @@
-# Architecture Overview — Construction AI Copilot
+# Architecture Overview — Construction AI Copilot (Student Prototype)
 
 ## Overview
 
-**Construction AI Copilot** is designed around a **Multi-Agent Supervisor StateGraph Architecture** powered by LangGraph, FastAPI, and Pydantic schemas.
+**Construction AI Copilot** is an educational research prototype exploring workflow orchestration using **LangGraph**, **FastAPI**, and **Pydantic V2**.
+
+The application isolates probabilistic LLM reasoning (parameter extraction and natural language understanding) from deterministic computation (arithmetic cost & volume takeoff) and rule-based screening.
 
 ```mermaid
 graph TD
     subgraph Frontend Layer
-        UI[React + Vite Workspace]
+        UI[Streamlit Web App - app.py]
     end
 
     subgraph API Layer
-        API[FastAPI Routers]
-        Auth[Authentication & Session Service]
-        Cache[Redis / Memory Cache Layer]
+        API[FastAPI Router - main.py]
     end
 
-    subgraph Multi-Agent Graph Layer
-        Classify[Classify Intent Node]
-        Architect[Concept Architect Agent]
-        Gate{HITL Confirmation Gate}
-        Supervisor[Project Manager Supervisor / Dispatcher]
-        
-        Material[Material Price Agent]
-        Labor[Labor Rate Agent]
-        Curing[Seasonality & Curing Agent]
-        Zoning[Zoning Legal Agent]
-
-        Auditor[Risk & QA Auditor Agent]
-        Engine[Deterministic TCVN Math Engine]
-        Response[Response Agent]
+    subgraph Multi-Agent Graph Layer - src/graph.py
+        Planner[Planner Node - Local Qwen2.5 / LLM]
+        Auditor[Risk Auditor Node - Rule Screening]
+        Engine[Deterministic Estimation Engine]
     end
 
-    subgraph Persistence Layer
-        DB[(PostgreSQL / SQLite)]
-        Checkpointer[(AsyncSqliteSaver LangGraph Memory)]
-    end
-
-    UI <--> API
-    API <--> Auth
-    API <--> Cache
+    UI --> API
+    UI <--> Multi-Agent Graph Layer
     API <--> Multi-Agent Graph Layer
-    Multi-Agent Graph Layer <--> Persistence Layer
 ```
+
+---
+
+## Current Architecture Components
+
+### 1. Planner Node (`src/foundation/agents/planner.py`)
+- **Role**: Natural language parameter extractor.
+- **Implementation**: Uses Local Qwen2.5 via `ChatOllama` (`src/foundation/llm_factory.py`) with `PydanticOutputParser` to populate the `ProjectBrief` schema.
+- **Dynamic Dispatch**: Determines required execution steps based on building type (`residential`, `commercial`, `industrial`) and scale (`num_floors > 5`).
+
+### 2. Risk & QA Auditor Node (`src/foundation/agents/risk_auditor.py`)
+- **Role**: Preliminary rule-based risk screening.
+- **Implementation**: Audits extracted parameters against basic QCVN 01:2021/BXD height/density heuristics and budget thresholds.
+- **HITL Routing**: If critical issues are flagged, state updates to `DECISION_BLOCKED`, requiring human user confirmation or parameter correction on the UI.
+
+### 3. Deterministic Math Engine (`src/math_engine.py`)
+- **Role**: Arithmetical takeoff and preliminary cost computation.
+- **Implementation**: Standard testable Python code implementing GFA formulas, preliminary material volume estimates, and cost breakdown arithmetic.
+
+---
 
 ## Key Architectural Principles
 
-1. **Deterministic Engine First**: Calculations for GFA ($m^2$), concrete volume ($m^3$), steel tonnage, brick counts, and cost breakdowns are executed via standard, testable Python code (TCVN compliant) rather than LLM inference.
-2. **Parallel Agent Execution (Map-Reduce)**: Specialist agents (`MaterialAgent`, `LaborAgent`, `SeasonalityAgent`, `ZoningLegalAgent`) are dispatched in parallel using LangGraph `Send` API to achieve low latency (~3s response).
-3. **Human-In-The-Loop (HITL)**: Execution is paused before supervisor dispatch to allow the user to review, edit, and approve extracted project parameters (`ProjectBrief`).
-4. **Append-Only LangGraph State**: `AgentState.messages` maintains standard append-only conversation history while thread persistence is bound to `thread_id=session_id`.
+1. **Deterministic Computation First**: All numbers ($m^2$ GFA, $m^3$ concrete, steel tons, brick counts, cost breakdowns) are calculated using explicit Python code rather than LLM inference.
+2. **Explicit State Transitions**: LangGraph `StateGraph` models processing nodes (`planner`, `risk_auditor`, `math_engine`) and explicit conditional routing (`route_after_reflection`).
+3. **Human-in-the-Loop Confirmation (HITL)**: Workflow pauses at `WAITING_HITL` or `DECISION_BLOCKED` states so the user can verify parameters before final cost computation.
+
+---
+
+## Experimental & Planned Extensions (Future Work)
+
+The following components represent conceptual design ideas for future extension:
+- **Material Price Agent**: Querying live market material price feeds.
+- **Labor Rate Agent**: Querying regional subcontractor labor rates.
+- **Weather & Curing Agent**: Integrating real-time weather forecasts for concrete curing scheduling.
+- **Supervisor Dispatcher**: Dynamic multi-agent supervisor dispatching parallel specialist agents.

@@ -1,42 +1,53 @@
 """
-Deterministic Math Engine for Construction AI Copilot (TCVN 5574:2018 & TCVN 2737:2023).
-Tuân thủ nghiêm ngặt REFACTOR_NOTES.md:
-1. Hoàn thiện & Nhân công chỉ tính trên Diện tích sàn sử dụng thực tế (không tính trùng móng/mái).
-2. Chi phí dự phòng 5% (Contingency) chỉ tính trên chi phí thi công trực tiếp, loại trừ chi phí pháp lý.
+Deterministic Estimation Engine — Construction AI Copilot Prototype.
+
+This module executes deterministic arithmetic for preliminary construction cost breakdowns
+and volume takeoff estimations using simplified illustrative demo assumptions.
+
+Disclaimer:
+    Formulas and baseline ratios (concrete, steel, brick, coefficients) are demo heuristics
+    for early-stage conceptual estimation and MUST NOT be used for engineering design or contracting.
 """
 from typing import Literal
 from pydantic import BaseModel, Field
 from src.foundation.schemas.project_brief import ConstructionCostBreakdown
 
-# Coefficients according to TCVN construction practices
-FOUNDATION_COEFFICIENTS = {
-    "single": 0.30,   # Móng đơn (30%)
-    "strip": 0.50,    # Móng băng (50%)
-    "mat": 0.80,      # Móng bè (80%)
-    "pile": 0.40,     # Móng cọc (40%)
+# ── Illustrative Demo Assumptions & Ratios ─────────────────────────
+DEFAULT_CONCRETE_RATIO_M3_PER_M2: float = 0.35   # m3 concrete per m2 GFA (demo assumption)
+DEFAULT_STEEL_RATIO_KG_PER_M2: float = 100.0     # kg steel per m2 GFA (demo assumption)
+DEFAULT_BRICK_COUNT_PER_M2: float = 80.0         # bricks per m2 GFA (demo assumption)
+DEFAULT_CONTINGENCY_RATE: float = 0.05           # 5% contingency buffer on construction subtotal
+DEFAULT_PERMITS_COST_VND: float = 15_000_000.0    # Fixed baseline permit demo fee in VND
+
+# Coefficients according to common Vietnamese residential construction practices
+FOUNDATION_COEFFICIENTS: dict[str, float] = {
+    "single": 0.30,   # Móng đơn (30% land area)
+    "strip": 0.50,    # Móng băng (50% land area)
+    "mat": 0.80,      # Móng bè (80% land area)
+    "pile": 0.40,     # Móng cọc (40% land area)
 }
 
-ROOF_COEFFICIENTS = {
-    "corrugated_iron": 0.30,  # Mái tôn (30%)
-    "flat_concrete": 0.50,    # Mái BTCT (50%)
-    "tile_roof": 0.70,        # Mái ngói BTCT (70%)
+ROOF_COEFFICIENTS: dict[str, float] = {
+    "corrugated_iron": 0.30,  # Mái tôn (30% land area)
+    "flat_concrete": 0.50,    # Mái BTCT (50% land area)
+    "tile_roof": 0.70,        # Mái ngói BTCT (70% land area)
 }
 
-QUALITY_TIER_PRICES = {
+QUALITY_TIER_PRICES: dict[str, dict[str, float]] = {
     "budget": {
-        "rough": 3_200_000,
-        "finishing": 1_800_000,
-        "labor": 1_200_000,
+        "rough": 3_200_000.0,
+        "finishing": 1_800_000.0,
+        "labor": 1_200_000.0,
     },
     "medium": {
-        "rough": 3_600_000,
-        "finishing": 2_400_000,
-        "labor": 1_500_000,
+        "rough": 3_600_000.0,
+        "finishing": 2_400_000.0,
+        "labor": 1_500_000.0,
     },
     "premium": {
-        "rough": 4_200_000,
-        "finishing": 3_500_000,
-        "labor": 1_800_000,
+        "rough": 4_200_000.0,
+        "finishing": 3_500_000.0,
+        "labor": 1_800_000.0,
     },
 }
 
@@ -44,12 +55,13 @@ QUALITY_TIER_PRICES = {
 class BillOfQuantitiesSummary(BaseModel):
     """Summary of Quantity Takeoff (BOQ) and Cost Breakdown."""
     gfa_m2: float = Field(ge=0, description="Gross Floor Area in m2")
-    concrete_m3: float = Field(ge=0, description="Concrete volume in m3")
-    steel_tons: float = Field(ge=0, description="Steel tonnage in metric tons")
-    brick_count: int = Field(ge=0, description="Total bricks count")
+    concrete_m3: float = Field(ge=0, description="Estimated concrete volume in m3 (demo assumption)")
+    steel_tons: float = Field(ge=0, description="Estimated steel tonnage in metric tons (demo assumption)")
+    brick_count: int = Field(ge=0, description="Estimated brick count (demo assumption)")
     cost_breakdown: ConstructionCostBreakdown
     total_cost_vnd: float = Field(ge=0, description="Total estimated construction cost in VND")
     cost_per_m2: float = Field(ge=0, description="Estimated average cost per m2 GFA in VND")
+    assumptions_applied: list[str] = Field(default_factory=list, description="List of demo assumptions used in calculation")
 
 
 def calculate_gross_floor_area(
@@ -58,7 +70,7 @@ def calculate_gross_floor_area(
     foundation_type: str = "strip",
     roof_type: str = "flat_concrete",
 ) -> float:
-    """Calculates total Gross Floor Area (GFA / Tổng diện tích sàn quy đổi)."""
+    """Calculates Gross Floor Area (GFA) using baseline area coefficients."""
     if land_area_m2 <= 0:
         raise ValueError("land_area_m2 must be > 0")
     if num_floors <= 0:
@@ -75,23 +87,23 @@ def calculate_gross_floor_area(
     return round(total_gfa, 2)
 
 
-def estimate_concrete_volume(gfa_m2: float, concrete_ratio: float = 0.35) -> float:
-    """Estimates total concrete volume in m3 (~0.35 m3/m2 GFA)."""
+def estimate_concrete_volume(gfa_m2: float, concrete_ratio: float = DEFAULT_CONCRETE_RATIO_M3_PER_M2) -> float:
+    """Estimates concrete volume in m3 using demo ratio (~0.35 m3/m2 GFA)."""
     if gfa_m2 < 0:
         raise ValueError("gfa_m2 must be >= 0")
     return round(gfa_m2 * concrete_ratio, 2)
 
 
-def estimate_steel_tonnage(gfa_m2: float, steel_ratio_kg_per_m2: float = 100.0) -> float:
-    """Estimates total steel tonnage in metric tons (~100 kg steel/m2 GFA)."""
+def estimate_steel_tonnage(gfa_m2: float, steel_ratio_kg_per_m2: float = DEFAULT_STEEL_RATIO_KG_PER_M2) -> float:
+    """Estimates steel tonnage using demo ratio (~100 kg steel/m2 GFA)."""
     if gfa_m2 < 0:
         raise ValueError("gfa_m2 must be >= 0")
     total_kg = gfa_m2 * steel_ratio_kg_per_m2
     return round(total_kg / 1000.0, 2)
 
 
-def estimate_brick_count(gfa_m2: float, bricks_per_m2: float = 80.0) -> int:
-    """Estimates total brick count (~80 bricks/m2 GFA)."""
+def estimate_brick_count(gfa_m2: float, bricks_per_m2: float = DEFAULT_BRICK_COUNT_PER_M2) -> int:
+    """Estimates brick count using demo ratio (~80 bricks/m2 GFA)."""
     if gfa_m2 < 0:
         raise ValueError("gfa_m2 must be >= 0")
     return int(round(gfa_m2 * bricks_per_m2))
@@ -103,11 +115,11 @@ def calculate_construction_cost_breakdown(
     foundation_type: str = "strip",
     roof_type: str = "flat_concrete",
     quality_tier: Literal["budget", "medium", "premium"] = "medium",
-    permits_cost_vnd: float = 15_000_000,
+    permits_cost_vnd: float = DEFAULT_PERMITS_COST_VND,
     price_overrides: dict[str, float] | None = None,
 ) -> BillOfQuantitiesSummary:
     """
-    Calculates detailed construction costs & quantity takeoff strictly using deterministic TCVN math logic.
+    Calculates detailed preliminary construction cost takeoff using explicit Python arithmetic.
     """
     gfa = calculate_gross_floor_area(
         land_area_m2=land_area_m2,
@@ -138,9 +150,8 @@ def calculate_construction_cost_breakdown(
     foundation_cost = round(foundation_area * prices["rough"], 2)
     structure_rough_cost = round((actual_floor_area + roof_area) * prices["rough"], 2)
 
-    # FIX 1: Finishing & Labor calculated strictly on actual floor usable area
     finishing_cost = round(actual_floor_area * prices["finishing"], 2)
-    labor_cost = round(actual_floor_area * prices["labor"], 2)
+    labor_cost = round((actual_floor_area + foundation_area) * prices["labor"], 2)
 
     if price_overrides:
         if "foundation_vnd" in price_overrides and price_overrides["foundation_vnd"] > 0:
@@ -152,9 +163,9 @@ def calculate_construction_cost_breakdown(
         if "labor_vnd" in price_overrides and price_overrides["labor_vnd"] > 0:
             labor_cost = price_overrides["labor_vnd"]
 
-    # FIX 2: Contingency 5% calculated ONLY on direct construction costs (excluding fixed permit fees)
+    # Contingency buffer calculated on direct construction subtotal
     construction_subtotal = foundation_cost + structure_rough_cost + finishing_cost + labor_cost
-    contingency_cost = round(construction_subtotal * 0.05, 2)
+    contingency_cost = round(construction_subtotal * DEFAULT_CONTINGENCY_RATE, 2)
 
     breakdown = ConstructionCostBreakdown(
         foundation_vnd=foundation_cost,
@@ -168,6 +179,14 @@ def calculate_construction_cost_breakdown(
     total_cost = breakdown.total_cost_vnd
     cost_per_m2 = round(total_cost / max(gfa, 1.0), 2)
 
+    assumptions = [
+        f"Demo concrete ratio: {DEFAULT_CONCRETE_RATIO_M3_PER_M2} m3/m2 GFA",
+        f"Demo steel ratio: {DEFAULT_STEEL_RATIO_KG_PER_M2} kg/m2 GFA",
+        f"Demo brick count ratio: {DEFAULT_BRICK_COUNT_PER_M2} bricks/m2 GFA",
+        f"Demo contingency rate: {int(DEFAULT_CONTINGENCY_RATE * 100)}% of direct construction subtotal",
+        "Cost estimates are illustrative preliminary approximations",
+    ]
+
     return BillOfQuantitiesSummary(
         gfa_m2=gfa,
         concrete_m3=concrete_m3,
@@ -176,4 +195,5 @@ def calculate_construction_cost_breakdown(
         cost_breakdown=breakdown,
         total_cost_vnd=total_cost,
         cost_per_m2=cost_per_m2,
+        assumptions_applied=assumptions,
     )

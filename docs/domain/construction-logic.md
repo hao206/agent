@@ -1,40 +1,58 @@
-# Construction Math & Deterministic BOQ Calculation Methodology (TCVN)
+# Simplified Estimation Logic — Construction AI Copilot Prototype
 
-## 1. Gross Floor Area (GFA) Formula
-
-Total Gross Floor Area (GFA / Tổng diện tích sàn xây dựng) is computed deterministically using standard Vietnamese construction practice coefficients:
-
-$$ \text{GFA} = (\text{Land Area} \times K_{\text{foundation}}) + (\text{Land Area} \times N_{\text{floors}}) + (\text{Land Area} \times K_{\text{roof}}) $$
-
-### Foundation Coefficients ($K_{\text{foundation}}$)
-- **Móng đơn (Single Foundation)**: $30\%$ ($0.30$)
-- **Móng cọc (Pile Foundation)**: $40\%$ ($0.40$)
-- **Móng băng (Strip Foundation)**: $50\%$ ($0.50$)
-- **Móng bè (Mat Foundation)**: $80\%$ ($0.80$)
-
-### Roof Coefficients ($K_{\text{roof}}$)
-- **Mái tôn (Corrugated Iron)**: $30\%$ ($0.30$)
-- **Mái Bê tông cốt thép (Flat Concrete)**: $50\%$ ($0.50$)
-- **Mái ngói BTCT (Tile Roof)**: $70\%$ ($0.70$)
+This document outlines the simplified estimation formulas and assumptions used in this educational prototype.
 
 ---
 
-## 2. Quantity Takeoff (BOQ) Estimation Formulas
+## 1. Gross Floor Area (GFA) Calculation
 
-- **Concrete Volume ($m^3$)**:
+- **Purpose**: Preliminary area conversion taking into account foundation and roof area coefficients.
+- **Formula**:
+  $$ \text{GFA} = (\text{Land Area} \times K_{\text{foundation}}) + (\text{Land Area} \times N_{\text{floors}}) + (\text{Land Area} \times K_{\text{roof}}) $$
+- **Unit**: $m^2$
+- **Assumption**: Standard coefficients (Strip foundation $K_{\text{foundation}} = 0.50$, Flat concrete roof $K_{\text{roof}} = 0.50$).
+- **Limitation**: Illustrative approximation for conceptual estimation; actual architectural floor plans must be measured directly from CAD/BIM drawings.
+
+---
+
+## 2. Preliminary Concrete Volume Takeoff
+
+- **Purpose**: Early-stage conceptual concrete estimation.
+- **Formula**:
   $$ \text{Concrete } m^3 = \text{GFA} \times 0.35 $$
-- **Steel Tonnage (Tấn)**:
-  $$ \text{Steel Tons} = \frac{\text{GFA} \times 100 \text{ kg/m}^2}{1000} $$
-- **Brick Count (Viên)**:
-  $$ \text{Brick Count} = \text{GFA} \times 80 \text{ viên/m}^2 $$
+- **Unit**: $m^3$
+- **Assumption**: Demo ratio of $0.35 \text{ m}^3$ concrete per $m^2$ GFA.
+- **Limitation**: **Not** a structural engineering design value. Actual concrete volume depends on structural member design, beam depth, and column schedules.
 
 ---
 
-## 3. Cost Breakdown Components
+## 3. Preliminary Steel Tonnage Takeoff
 
-1. **Foundation Cost**: $\text{Land Area} \times K_{\text{foundation}} \times P_{\text{rough}}$
-2. **Structure Rough Cost**: $(\text{Floors Area} + \text{Roof Area}) \times P_{\text{rough}}$
-3. **Finishing Cost**: $\text{Actual Floor Area} \times P_{\text{finishing}}$ *(Refactored logic)*
-4. **Labor Cost**: $\text{Actual Floor Area} \times P_{\text{labor}}$ *(Refactored logic)*
-5. **Permits & Legal**: $15,000,000$ VND fixed baseline
-6. **Contingency Buffer**: $5\%$ of construction subtotal
+- **Purpose**: Early-stage conceptual steel reinforcement estimation.
+- **Formula**:
+  $$ \text{Steel Tons} = \frac{\text{GFA} \times 100 \text{ kg/m}^2}{1000} $$
+- **Unit**: Metric tons
+- **Assumption**: Demo ratio of $100 \text{ kg}$ steel per $m^2$ GFA.
+- **Limitation**: **Not** a structural rebar schedule. Actual reinforcement rebar tonnage must be calculated by licensed structural engineers.
+
+---
+
+## 4. Preliminary Brick Count Takeoff
+
+- **Purpose**: Early-stage wall masonry estimation.
+- **Formula**:
+  $$ \text{Brick Count} = \text{GFA} \times 80 \text{ bricks/m}^2 $$
+- **Unit**: Bricks (viên)
+- **Assumption**: Demo ratio of $80 \text{ bricks}$ per $m^2$ GFA.
+- **Limitation**: Simplified demo assumption; wall openings, window ratios, and wall thickness (100mm vs 200mm) are not modeled.
+
+---
+
+## 5. Cost Breakdown Ratios
+
+- **Foundation Cost**: $\text{Land Area} \times K_{\text{foundation}} \times P_{\text{rough}}$
+- **Structure Rough Cost**: $(\text{Actual Floor Area} + \text{Roof Area}) \times P_{\text{rough}}$
+- **Finishing Cost**: $\text{Actual Floor Area} \times P_{\text{finishing}}$ *(Calculated strictly on actual floor usable area)*
+- **Labor Cost**: $(\text{Actual Floor Area} + \text{Foundation Area}) \times P_{\text{labor}}$
+- **Permits & Legal**: $15,000,000$ VND fixed baseline demo fee
+- **Contingency Buffer**: $5\%$ of direct construction subtotal

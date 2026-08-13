@@ -37,21 +37,30 @@ class ProjectBrief(BaseModel):
     width_m: float | None = Field(default=None, ge=0)
     length_m: float | None = Field(default=None, ge=0)
     num_floors: int | None = Field(default=None, ge=1, le=50)
-    soil_type: Literal["good", "medium", "weak", "unknown"] = "medium"
-    foundation_type: Literal["single", "strip", "mat", "pile"] = "strip"
-    roof_type: Literal["flat_concrete", "corrugated_iron", "tile_roof"] = "flat_concrete"
-    structure_type: Literal["reinforced_concrete", "steel_frame"] = "reinforced_concrete"
-    quality_tier: Literal["budget", "medium", "premium"] = "medium"
+    soil_type: Literal["good", "medium", "weak", "unknown"] = Field(default="medium", description="Demo default assumed soil type")
+    foundation_type: Literal["single", "strip", "mat", "pile"] = Field(default="strip", description="Demo default assumed foundation type")
+    roof_type: Literal["flat_concrete", "corrugated_iron", "tile_roof"] = Field(default="flat_concrete", description="Demo default assumed roof type")
+    structure_type: Literal["reinforced_concrete", "steel_frame"] = Field(default="reinforced_concrete", description="Demo default assumed structure type")
+    quality_tier: Literal["budget", "medium", "premium"] = Field(default="medium", description="Demo default assumed quality tier")
     budget_vnd: float | None = Field(default=None, ge=0)
     currency: str = "VND"
     start_date: Date | None = None
-    construction_type: Literal["residential", "commercial", "industrial"] = "residential"
+    construction_type: Literal["residential", "commercial", "industrial"] = Field(default="residential", description="Demo default construction category")
     functional_requirements: list[str] = Field(default_factory=list)
     priority: Literal["cheapest", "balanced", "high_quality"] = "balanced"
     constraints: dict[str, Any] = Field(default_factory=dict)
     steps: list[str] = Field(default_factory=list)
     goal: str = ""
     version: int = 1
+
+    def get_assumed_parameters(self) -> dict[str, str]:
+        """Returns dictionary of default/assumed parameters used when explicit user input is absent."""
+        return {
+            "soil_type": f"{self.soil_type} (assumed demo default)",
+            "foundation_type": f"{self.foundation_type} (assumed demo default)",
+            "roof_type": f"{self.roof_type} (assumed demo default)",
+            "quality_tier": f"{self.quality_tier} (assumed demo default)",
+        }
 
     @model_validator(mode="after")
     def derive_land_area(self) -> "ProjectBrief":

@@ -35,11 +35,11 @@ class TestGoldenConstructionCosts(unittest.TestCase):
         # Finishing cost = 300m2 usable area * 2,400,000 = 720,000,000 VND (Refactored TCVN formula)
         self.assertEqual(boq.cost_breakdown.finishing_vnd, 720_000_000.0)
 
-        # Contingency 5% = 2,610,000,000 * 0.05 = 130,500,000 VND
-        self.assertEqual(boq.cost_breakdown.contingency_vnd, 130_500_000.0)
+        # Contingency 5% = 2,685,000,000 * 0.05 = 134,250,000 VND
+        self.assertEqual(boq.cost_breakdown.contingency_vnd, 134_250_000.0)
         
         # Total cost check
-        self.assertEqual(boq.total_cost_vnd, 2_755_500_000.0)
+        self.assertEqual(boq.total_cost_vnd, 2_834_250_000.0)
         self.assertEqual(boq.total_cost_vnd, boq.cost_breakdown.total_cost_vnd)
 
     def test_golden_villa_cost(self):
