@@ -74,18 +74,3 @@ construction-ai-foundation/
 - **Python**: `>= 3.10`
 - **Dependencies chính**: `pydantic>=2.0.0`, `langgraph>=0.2.0`, `langchain-core>=0.3.0`, `pytest>=8.0.0`
 
-Khởi tạo môi trường ảo và cài đặt:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate  # Hoặc .venv\Scripts\activate trên Windows
-pip install -e .
-```
-
-Kiểm tra cú pháp code:
-
-```bash
-python -m compileall src tests
-pytest tests/
-```
-
