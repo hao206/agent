@@ -1,14 +1,15 @@
 """
-Golden Master Pattern Test Example — Construction Cost Estimation.
+Golden Master Pattern Test Example — Construction Cost Estimation (Refactored TCVN Baseline).
 """
 import sys
 import os
+import unittest
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "src")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-import unittest
-from foundation.schemas.project_brief import ConstructionCostBreakdown, ProjectBrief
-from _reference_needs_rewrite.construction_math_old import calculate_construction_cost_breakdown
+from src.foundation.schemas.project_brief import ConstructionCostBreakdown, ProjectBrief
+from src.math_engine import calculate_construction_cost_breakdown
 
 
 class TestGoldenConstructionCosts(unittest.TestCase):
@@ -27,15 +28,18 @@ class TestGoldenConstructionCosts(unittest.TestCase):
         self.assertEqual(boq.steel_tons, 40.0)
         self.assertEqual(boq.brick_count, 32000)
 
-        # Medium quality: rough=3.6M, finishing=2.4M, labor=1.5M per m2 GFA (Legacy formula baseline)
+        # Medium quality: rough=3.6M, finishing=2.4M, labor=1.5M
         # Foundation cost = 100 * 0.5 * 3,600,000 = 180,000,000 VND
         self.assertEqual(boq.cost_breakdown.foundation_vnd, 180_000_000.0)
         
-        # Finishing cost = 400 * 2,400,000 = 960,000,000 VND
-        self.assertEqual(boq.cost_breakdown.finishing_vnd, 960_000_000.0)
+        # Finishing cost = 300m2 usable area * 2,400,000 = 720,000,000 VND (Refactored TCVN formula)
+        self.assertEqual(boq.cost_breakdown.finishing_vnd, 720_000_000.0)
 
-        # Total subtotal + 5% contingency buffer
-        self.assertGreater(boq.cost_breakdown.contingency_vnd, 0)
+        # Contingency 5% = 2,610,000,000 * 0.05 = 130,500,000 VND
+        self.assertEqual(boq.cost_breakdown.contingency_vnd, 130_500_000.0)
+        
+        # Total cost check
+        self.assertEqual(boq.total_cost_vnd, 2_755_500_000.0)
         self.assertEqual(boq.total_cost_vnd, boq.cost_breakdown.total_cost_vnd)
 
     def test_golden_villa_cost(self):

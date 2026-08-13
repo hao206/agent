@@ -8,7 +8,7 @@ from datetime import date as Date
 from datetime import datetime, timezone
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, computed_field, model_validator
 
 
 def utc_now() -> datetime:
@@ -80,6 +80,7 @@ class BOQItem(BaseModel):
     quantity: float = Field(ge=0)
     unit_price_vnd: float = Field(ge=0)
 
+    @computed_field
     @property
     def total_vnd(self) -> float:
         return round(self.quantity * self.unit_price_vnd, 2)
@@ -149,6 +150,7 @@ class ConstructionCostBreakdown(BaseModel):
     permits_legal_vnd: float = Field(default=0, ge=0)
     contingency_vnd: float = Field(default=0, ge=0)
 
+    @computed_field
     @property
     def total_cost_vnd(self) -> float:
         return (
